@@ -5,7 +5,7 @@ import com.jackleow.presentation.services.PresentationService
 import io.ktor.server.application.*
 
 fun main(args: Array<String>) {
-    io.ktor.server.cio.EngineMain.main(arrayOf("-P:presentation.htmlPath=${args[0]}"))
+    io.ktor.server.cio.EngineMain.main(args)
 }
 
 fun Application.module() {
