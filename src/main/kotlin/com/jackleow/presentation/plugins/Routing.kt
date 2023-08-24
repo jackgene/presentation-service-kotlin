@@ -24,7 +24,7 @@ fun Application.configureRouting(service: PresentationService) {
 
     routing {
         get("/") {
-            val path: String = application.environment.config.property("presentation.htmlPath").getString()
+            val path: String = application.environment.config.property("htmlPath").getString()
             call.respondFile(File(path))
         }
 
