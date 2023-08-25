@@ -23,9 +23,11 @@ fun Application.configureRouting(service: PresentationService) {
     }
 
     routing {
+        val htmlPath: String = application.environment.config.property("htmlPath").getString()
+        val routePattern: Regex = """(.*) to (Everyone|Me)(?: \(Direct Message\))?""".toRegex()
+
         get("/") {
-            val path: String = application.environment.config.property("htmlPath").getString()
-            call.respondFile(File(path))
+            call.respondFile(File(htmlPath))
         }
 
         // Moderation
@@ -44,22 +46,18 @@ fun Application.configureRouting(service: PresentationService) {
             val text: String = call.parameters["text"] ?: throw MissingRequestParameterException(""""text"""")
 
             val senderAndRecipient: Pair<String, String>? = when {
-                route.endsWith(" to Me (Direct Message)") ->
-                    route.dropLast(23) to "Me"
-
-                route.endsWith(" to Me") ->
-                    route.dropLast(6) to "Me"
-
-                route.endsWith(" to Everyone") ->
-                    route.dropLast(12) to "Everyone"
+                routePattern.matches(route) ->
+                    routePattern.matchEntire(route)
+                        ?.destructured
+                        ?.let { (sender, recipient) -> sender to recipient }
 
                 route.startsWith("Me to ") -> null
 
                 else -> throw BadRequestException("""malformed "route": $route""")
             }
 
-            if (senderAndRecipient != null) {
-                val (sender: String, recipient: String) = senderAndRecipient
+            senderAndRecipient?.let {
+                val (sender: String, recipient: String) = it
                 service.chatMessageSink.emit(ChatMessage(sender, recipient, text))
             }
             call.response.status(HttpStatusCode.NoContent)
