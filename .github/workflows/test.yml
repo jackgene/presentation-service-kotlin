@@ -19,4 +19,4 @@ jobs:
         java-version: 11
         cache: gradle
     - name: Build and Test
-      run: ./gradlew -Dtest.prop.minSuccessful=100000 test
+      run: ./gradlew -Dkotest.proptest.default.iteration.count=100000 test
