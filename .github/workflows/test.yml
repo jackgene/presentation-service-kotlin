@@ -12,5 +12,11 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
+    - name: Setup Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: zulu
+        java-version: 11
+        cache: gradle
     - name: Build and Test
       run: ./gradlew -Dtest.prop.minSuccessful=100000 test
