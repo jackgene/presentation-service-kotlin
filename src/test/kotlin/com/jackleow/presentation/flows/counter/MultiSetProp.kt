@@ -31,7 +31,6 @@ class MultiSetProp : WordSpec({
             checkAll(
                 duplicativeElements, duplicativeElements
             ) { increments: List<String>, decrements: List<String> ->
-
                 // Test
                 val instance: MultiSet<String> = decrements.fold(
                     increments.fold(MultiSet()) { accum: MultiSet<String>, increment: String ->
@@ -58,7 +57,6 @@ class MultiSetProp : WordSpec({
             checkAll(
                 duplicativeElements, duplicativeElements
             ) { increments: List<String>, decrements: List<String> ->
-
                 // Test
                 val instance: MultiSet<String> = decrements.fold(
                     increments.fold(MultiSet()) { accum: MultiSet<String>, increment: String ->
