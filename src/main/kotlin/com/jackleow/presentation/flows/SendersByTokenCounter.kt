@@ -2,7 +2,7 @@ package com.jackleow.presentation.flows
 
 import com.jackleow.presentation.flows.counter.*
 import com.jackleow.presentation.models.ChatMessage
-import com.jackleow.presentation.tokenizing.Tokenizer
+import com.jackleow.presentation.flows.tokenizing.Tokenizer
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
