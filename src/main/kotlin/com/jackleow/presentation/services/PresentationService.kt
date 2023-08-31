@@ -4,10 +4,11 @@ import com.jackleow.presentation.flows.ChatBroadcastFlow
 import com.jackleow.presentation.flows.ModeratedTextCollector
 import com.jackleow.presentation.flows.SendersByTokenCounter
 import com.jackleow.presentation.flows.TranscriptionBroadcastFlow
+import com.jackleow.presentation.flows.tokenizing.MappedKeywordsTokenizer
+import com.jackleow.presentation.flows.tokenizing.NormalizedWordsTokenizer
 import com.jackleow.presentation.models.ChatMessage
 import com.jackleow.presentation.models.ModeratedText
 import com.jackleow.presentation.models.Transcript
-import com.jackleow.presentation.tokenizing.Tokenizing
 import io.ktor.server.config.*
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -23,7 +24,7 @@ class PresentationService(config: ApplicationConfig) {
     val languagePollSource: Flow<SendersByTokenCounter.Counts> =
         SendersByTokenCounter.flow(
             "language-poll",
-            Tokenizing.mappedKeywordsTokenizer(
+            MappedKeywordsTokenizer(
                 languagePollConfig.config("languageByKeyword")
                     .toMap()
                     .mapValues { it.value.toString() }
@@ -34,7 +35,7 @@ class PresentationService(config: ApplicationConfig) {
     val wordCloudSource: Flow<SendersByTokenCounter.Counts> =
         SendersByTokenCounter.flow(
             "word-cloud",
-            Tokenizing.normalizedWordsTokenizer(
+            NormalizedWordsTokenizer(
                 wordCloudConfig.property("stopWords")
                     .getList()
                     .toSet(),
