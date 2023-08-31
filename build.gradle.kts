@@ -38,4 +38,5 @@ dependencies {
 
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
+    systemProperties = project.properties.filterKeys { it.startsWith("kotest") }
 }
