@@ -1,0 +1,16 @@
+name: Test
+on:
+  pull_request:
+    branches:
+      - main
+  push:
+    branches:
+      - main
+jobs:
+  Test:
+    runs-on: macos-latest
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v1
+    - name: Build and Test
+      run: ./gradlew -Dtest.prop.minSuccessful=100000 test
