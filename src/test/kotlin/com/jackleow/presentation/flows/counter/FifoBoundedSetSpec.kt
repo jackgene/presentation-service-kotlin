@@ -22,7 +22,7 @@ class FifoBoundedSetSpec : WordSpec({
                 val (actualUpdatedInstance, actualEffect) = instance.add("test")
 
                 // Verify
-                actualEffect shouldBe FifoBoundedSet.Added()
+                actualEffect shouldBe FifoBoundedSet.Added("test")
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test")
             }
 
@@ -31,19 +31,21 @@ class FifoBoundedSetSpec : WordSpec({
                 val (actualUpdatedInstance, actualEffects) = instance.addAll(listOf("test-1", "test-2"))
 
                 // Verify
-                actualEffects shouldBe listOf(FifoBoundedSet.Added(), FifoBoundedSet.Added())
+                actualEffects shouldBe listOf(
+                    FifoBoundedSet.Added("test-1"),
+                    FifoBoundedSet.Added("test-2")
+                )
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-1", "test-2")
             }
 
-            "accept 3 new elements evicting the first" {
+            "accept 3 new elements ignoring the first" {
                 // Test
                 val (actualUpdatedInstance, actualEffects) = instance.addAll(listOf("test-1", "test-2", "test-3"))
 
                 // Verify
                 actualEffects shouldBe listOf(
-                    FifoBoundedSet.Added(),
-                    FifoBoundedSet.Added(),
-                    FifoBoundedSet.AddedEvicting("test-1")
+                    FifoBoundedSet.Added("test-2"),
+                    FifoBoundedSet.Added("test-3")
                 )
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-2", "test-3")
             }
@@ -63,7 +65,7 @@ class FifoBoundedSetSpec : WordSpec({
                 val (actualUpdatedInstance, actualEffect) = instance.add("test-2")
 
                 // Verify
-                actualEffect shouldBe FifoBoundedSet.Added()
+                actualEffect shouldBe FifoBoundedSet.Added("test-2")
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-1", "test-2")
             }
 
@@ -72,7 +74,7 @@ class FifoBoundedSetSpec : WordSpec({
                 val (actualUpdatedInstance, actualEffect) = instance.add("test-1")
 
                 // Verify
-                actualEffect shouldBe FifoBoundedSet.NotAdded()
+                actualEffect shouldBe null
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-1")
             }
 
@@ -82,8 +84,8 @@ class FifoBoundedSetSpec : WordSpec({
 
                 // Verify
                 actualEffects shouldBe listOf(
-                    FifoBoundedSet.Added(),
-                    FifoBoundedSet.AddedEvicting("test-1")
+                    FifoBoundedSet.Added("test-2"),
+                    FifoBoundedSet.AddedEvicting("test-3", "test-1")
                 )
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-2", "test-3")
             }
@@ -103,7 +105,7 @@ class FifoBoundedSetSpec : WordSpec({
                 val (actualUpdatedInstance, actualEffect) = instance.add("test-3")
 
                 // Verify
-                actualEffect shouldBe FifoBoundedSet.AddedEvicting("test-1")
+                actualEffect shouldBe FifoBoundedSet.AddedEvicting("test-3", "test-1")
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-2", "test-3")
             }
 
@@ -112,7 +114,7 @@ class FifoBoundedSetSpec : WordSpec({
                 val (actualUpdatedInstance, actualEffect) = instance.add("test-1")
 
                 // Verify
-                actualEffect shouldBe FifoBoundedSet.NotAdded()
+                actualEffect shouldBe null
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-2", "test-1")
             }
 
@@ -122,8 +124,8 @@ class FifoBoundedSetSpec : WordSpec({
 
                 // Verify
                 actualEffects shouldBe listOf(
-                    FifoBoundedSet.AddedEvicting("test-1"),
-                    FifoBoundedSet.AddedEvicting("test-2")
+                    FifoBoundedSet.AddedEvicting("test-3", "test-1"),
+                    FifoBoundedSet.AddedEvicting("test-4", "test-2")
                 )
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-3", "test-4")
             }
@@ -133,22 +135,21 @@ class FifoBoundedSetSpec : WordSpec({
                 val (actualUpdatedInstance, actualEffects) = instance.addAll(listOf("test-2", "test-1"))
 
                 // Verify
-                actualEffects shouldBe listOf(
-                    FifoBoundedSet.NotAdded(),
-                    FifoBoundedSet.NotAdded()
-                )
+                actualEffects shouldBe listOf()
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-2", "test-1")
             }
 
             "accept a new element, but not an existing element, updating the insertion order of the existing element" {
                 // Test
-                val (actualUpdatedInstance, actualEffects) = instance.addAll(listOf("test-1", "test-3"))
+                val (actualUpdatedInstance, actualEffects) = instance.addAll(
+                    listOf(
+                        "test-1", // test-1 not added, but is no longer first-in
+                        "test-3"  // test-2 is evicted instead
+                    )
+                )
 
                 // Verify
-                actualEffects shouldBe listOf(
-                    FifoBoundedSet.NotAdded(),                   // But test-1 should no longer be "first in"
-                    FifoBoundedSet.AddedEvicting("test-2") // test-2 is evicted
-                )
+                actualEffects shouldBe listOf(FifoBoundedSet.AddedEvicting("test-3", "test-2"))
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-1", "test-3")
             }
         }
