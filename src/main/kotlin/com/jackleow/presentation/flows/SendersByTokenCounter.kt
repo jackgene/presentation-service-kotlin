@@ -70,8 +70,8 @@ object SendersByTokenCounter {
 
         constructor(
             chatMessagesAndTokens: List<ChatMessageAndTokens>,
-            tokensBySender: Map<String, FifoBoundedSet<String>>,
-            tokens: MultiSet<String>
+            tokensBySender: TokensBySender,
+            tokens: TokenCounts
         ) : this(
             chatMessagesAndTokens,
             tokensBySender.mapValues { it.value.insertionOrder },
