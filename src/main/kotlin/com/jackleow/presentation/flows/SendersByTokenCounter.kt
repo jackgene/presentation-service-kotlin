@@ -120,21 +120,19 @@ object SendersByTokenCounter {
                                         val (tokens: FifoBoundedSet<String>, updates: List<FifoBoundedSet.Effect<String>>) =
                                             (tokensBySender[sender] ?: FifoBoundedSet(tokensPerSender))
                                                 .addAll(prioritizedTokens)
-                                        val addedTokens: Set<String> = prioritizedTokens.zip(updates)
-                                            .mapNotNull { (token: String, update: FifoBoundedSet.Effect<String>) ->
-                                                when (update) {
-                                                    is FifoBoundedSet.Added -> token
-                                                    is FifoBoundedSet.AddedEvicting -> token
-                                                    is FifoBoundedSet.NotAdded -> null
+                                        val addedTokens: Set<String> = updates.reversed()
+                                            .map {
+                                                when (it) {
+                                                    is FifoBoundedSet.Added -> it.added
+                                                    is FifoBoundedSet.AddedEvicting -> it.added
                                                 }
                                             }
                                             .toSet()
                                         val removedTokens: Set<String> = updates
-                                            .mapNotNull { update: FifoBoundedSet.Effect<String> ->
-                                                when (update) {
+                                            .mapNotNull {
+                                                when (it) {
                                                     is FifoBoundedSet.Added -> null
-                                                    is FifoBoundedSet.AddedEvicting -> update.value
-                                                    is FifoBoundedSet.NotAdded -> null
+                                                    is FifoBoundedSet.AddedEvicting -> it.evicting
                                                 }
                                             }
                                             .toSet()

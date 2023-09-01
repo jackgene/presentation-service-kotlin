@@ -53,8 +53,7 @@ class FifoBoundedSetProp : WordSpec({
                     .mapNotNull {
                         when (it) {
                             is FifoBoundedSet.Added -> null
-                            is FifoBoundedSet.AddedEvicting -> it.value
-                            is FifoBoundedSet.NotAdded -> null
+                            is FifoBoundedSet.AddedEvicting -> it.added
                         }
                     }.toSet()
 
@@ -116,13 +115,28 @@ class FifoBoundedSetProp : WordSpec({
                     ) { accumAndEffects: Pair<FifoBoundedSet<Int>, List<FifoBoundedSet.Effect<Int>>>, elem: Int ->
 
                         val (accum: FifoBoundedSet<Int>, effects: List<FifoBoundedSet.Effect<Int>>) = accumAndEffects
-                        val (accumNext: FifoBoundedSet<Int>, effect: FifoBoundedSet.Effect<Int>) = accum.add(elem)
+                        val (accumNext: FifoBoundedSet<Int>, effect: FifoBoundedSet.Effect<Int>?) = accum.add(elem)
 
-                        Pair(accumNext, effects + effect)
+                        Pair(accumNext, effects + listOfNotNull(effect))
                     }
 
                 // Verify
-                actualEffectsAddAll shouldBe actualEffectsAdd
+                actualEffectsAddAll.size shouldBeLessThanOrEqual actualEffectsAdd.size
+                for ((actualEffectAddAll, actualEffectAdd) in actualEffectsAddAll
+                    .zip(actualEffectsAdd.takeLast(maxSize))
+                ) {
+                    when (actualEffectAddAll) {
+                        is FifoBoundedSet.Added ->
+                            when (actualEffectAdd) {
+                                is FifoBoundedSet.AddedEvicting ->
+                                    actualEffectAddAll.added shouldBe actualEffectAdd.added
+
+                                else -> actualEffectAddAll shouldBe actualEffectAdd
+                            }
+
+                        else -> actualEffectAddAll shouldBe actualEffectAdd
+                    }
+                }
             }
         }
     }

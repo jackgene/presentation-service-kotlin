@@ -6,9 +6,8 @@ class FifoBoundedSet<E>(
     val insertionOrder: List<E> = listOf()
 ) {
     sealed interface Effect<out E>
-    data class Added<E>(val unused: Unit = Unit) : Effect<E>
-    data class AddedEvicting<E>(val value: E) : Effect<E>
-    data class NotAdded<E>(val unused: Unit = Unit) : Effect<E>
+    data class Added<E>(val added: E) : Effect<E>
+    data class AddedEvicting<E>(val added: E, val evicting: E) : Effect<E>
 
     init {
         require(maxSize >= 1) { "maxSize must be positive" }
@@ -20,32 +19,48 @@ class FifoBoundedSet<E>(
         maxSize, newUniques, newInsertionOrder
     )
 
-    fun add(element: E): Pair<FifoBoundedSet<E>, Effect<E>> =
+    fun add(element: E): Pair<FifoBoundedSet<E>, Effect<E>?> =
         if (uniques.contains(element))
-            if (element == insertionOrder.last()) Pair(this, NotAdded())
-            else Pair(copy(newInsertionOrder = insertionOrder - element + element), NotAdded())
+            if (element == insertionOrder.last()) Pair(this, null)
+            else Pair(copy(newInsertionOrder = insertionOrder - element + element), null)
         else
             if (uniques.size < maxSize) Pair(
                 copy(
                     newUniques = uniques + element,
                     newInsertionOrder = insertionOrder + element
                 ),
-                Added()
+                Added(element)
             )
             else Pair(
                 copy(
                     newUniques = uniques + element - insertionOrder.first(),
                     newInsertionOrder = insertionOrder.drop(1) + element
                 ),
-                AddedEvicting(insertionOrder.first())
+                AddedEvicting(element, insertionOrder.first())
             )
 
-    fun addAll(elements: List<E>): Pair<FifoBoundedSet<E>, List<Effect<E>>> =
-        elements.fold(Pair(this, listOf())) { accum: Pair<FifoBoundedSet<E>, List<Effect<E>>>, element: E ->
+    fun addAll(elements: List<E>): Pair<FifoBoundedSet<E>, List<Effect<E>>> = elements
+        .fold(Pair(this, listOf())) { accum: Pair<FifoBoundedSet<E>, List<Effect<E>>>, element: E ->
             val (accumSet: FifoBoundedSet<E>, accumEffects: List<Effect<E>>) = accum
-            val (nextAccumSet: FifoBoundedSet<E>, nextEffect: Effect<E>) = accumSet.add(element)
+            val (nextAccumSet: FifoBoundedSet<E>, nextEffect: Effect<E>?) = accumSet.add(element)
 
-            Pair(nextAccumSet, accumEffects + nextEffect)
+            Pair(
+                nextAccumSet, accumEffects + listOfNotNull(nextEffect)
+            )
+        }
+        .let { (set: FifoBoundedSet<E>, effects: List<Effect<E>>) ->
+            Pair(
+                set,
+                effects.takeLast(maxSize).map {
+                    when (it) {
+                        is AddedEvicting ->
+                            if (uniques.contains(it.evicting)) it
+                            else Added(it.added)
+
+                        else -> it
+                    }
+                }
+            )
         }
 
     override fun equals(other: Any?): Boolean {
