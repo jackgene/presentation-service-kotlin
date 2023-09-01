@@ -71,11 +71,11 @@ object SendersByTokenCounter {
         constructor(
             chatMessagesAndTokens: List<ChatMessageAndTokens>,
             tokensBySender: TokensBySender,
-            tokens: TokenCounts
+            tokenCounts: TokenCounts
         ) : this(
             chatMessagesAndTokens,
             tokensBySender.mapValues { it.value.insertionOrder },
-            tokens.elementsByCount.map {
+            tokenCounts.elementsByCount.map {
                 listOf(Count(it.key), Tokens(it.value))
             }
         )
