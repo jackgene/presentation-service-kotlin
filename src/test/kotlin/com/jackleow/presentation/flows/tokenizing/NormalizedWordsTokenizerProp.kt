@@ -1,5 +1,7 @@
 package com.jackleow.presentation.flows.tokenizing
 
+import com.jackleow.presentation.KotestProjectConfig
+import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.collections.shouldNotContain
 import io.kotest.matchers.ints.shouldBeGreaterThanOrEqual
@@ -12,7 +14,10 @@ import io.kotest.property.arbitrary.string
 import io.kotest.property.arbitrary.stringPattern
 import io.kotest.property.checkAll
 
+@OptIn(ExperimentalKotest::class)
 class NormalizedWordsTokenizerProp : WordSpec({
+    concurrency = KotestProjectConfig.parallelism
+
     "A NormalizedWordsTokenizer" should {
         "only extract hyphenated lower-case tokens" {
             checkAll(Arb.string()) { text: String ->

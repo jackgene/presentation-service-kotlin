@@ -1,6 +1,8 @@
 package com.jackleow.presentation.flows.counter
 
+import com.jackleow.presentation.KotestProjectConfig
 import io.kotest.assertions.fail
+import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.collections.shouldContain
 import io.kotest.matchers.ints.shouldBeGreaterThan
@@ -11,7 +13,10 @@ import io.kotest.property.Gen
 import io.kotest.property.arbitrary.*
 import io.kotest.property.checkAll
 
+@OptIn(ExperimentalKotest::class)
 class MultiSetProp : WordSpec({
+    concurrency = KotestProjectConfig.parallelism
+
     val duplicativeElements: Gen<List<String>> =
         Arb
             .list(

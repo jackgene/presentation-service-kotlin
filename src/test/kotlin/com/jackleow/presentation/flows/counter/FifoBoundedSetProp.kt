@@ -1,5 +1,7 @@
 package com.jackleow.presentation.flows.counter
 
+import com.jackleow.presentation.KotestProjectConfig
+import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.collections.shouldBeEmpty
 import io.kotest.matchers.collections.shouldContainAll
@@ -11,7 +13,10 @@ import io.kotest.property.arbitrary.list
 import io.kotest.property.arbitrary.positiveInt
 import io.kotest.property.checkAll
 
+@OptIn(ExperimentalKotest::class)
 class FifoBoundedSetProp : WordSpec({
+    concurrency = KotestProjectConfig.parallelism
+
     "A FifoBoundedSet" should {
         "never contain more elements than maxSize" {
             checkAll(
