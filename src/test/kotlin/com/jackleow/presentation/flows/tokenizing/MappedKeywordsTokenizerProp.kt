@@ -1,5 +1,7 @@
 package com.jackleow.presentation.flows.tokenizing
 
+import com.jackleow.presentation.KotestProjectConfig
+import io.kotest.common.ExperimentalKotest
 import io.kotest.core.spec.style.WordSpec
 import io.kotest.matchers.collections.shouldContainAll
 import io.kotest.property.Arb
@@ -9,7 +11,10 @@ import io.kotest.property.arbitrary.string
 import io.kotest.property.arbitrary.stringPattern
 import io.kotest.property.checkAll
 
+@OptIn(ExperimentalKotest::class)
 class MappedKeywordsTokenizerProp : WordSpec({
+    concurrency = KotestProjectConfig.parallelism
+
     "A MappedKeywordsTokenizer" should {
         val keywordsByRawToken: Gen<Map<String, String>> =
             Arb.map(Arb.stringPattern("[a-z]+"), Arb.string(), 1)
