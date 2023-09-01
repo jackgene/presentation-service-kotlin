@@ -100,7 +100,7 @@ class FifoBoundedSetProp : WordSpec({
             }
         }
 
-        "add and addAll produces identical effects given identical input" {
+        "add and addAll produces equivalent effects given identical input" {
             checkAll(
                 Arb.positiveInt(100), Arb.list(Arb.int())
             ) { maxSize: Int, elements: List<Int> ->
