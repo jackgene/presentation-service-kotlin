@@ -39,7 +39,8 @@ class PresentationService(config: ApplicationConfig) {
                 wordCloudConfig.property("stopWords")
                     .getList()
                     .toSet(),
-                wordCloudConfig.property("minWordLength").getString().toInt()
+                wordCloudConfig.property("minWordLength").getString().toInt(),
+                wordCloudConfig.property("maxWordLength").getString().toInt()
             ),
             wordCloudConfig.property("maxWordsPerPerson").getString().toInt(),
             chatMessageSink, resetSink, rejectedMessageSink
