@@ -24,7 +24,7 @@ fun Application.configureRouting(service: PresentationService) {
 
     routing {
         val htmlPath: String = application.environment.config.property("htmlPath").getString()
-        val routePattern: Regex = """(.*) to (Everyone|Me)(?: \(Direct Message\))?""".toRegex()
+        val routePattern: Regex = """(.*) to (Everyone|You)(?: \(Direct Message\))?""".toRegex()
 
         get("/") {
             call.respondFile(File(htmlPath))
@@ -51,7 +51,7 @@ fun Application.configureRouting(service: PresentationService) {
                         ?.destructured
                         ?.let { (sender, recipient) -> sender to recipient }
 
-                route.startsWith("Me to ") -> null
+                route.startsWith("You to ") -> null
 
                 else -> throw BadRequestException("""malformed "route": $route""")
             }
