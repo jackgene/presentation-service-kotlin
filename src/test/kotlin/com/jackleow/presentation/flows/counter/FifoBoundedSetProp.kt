@@ -102,10 +102,10 @@ class FifoBoundedSetProp : WordSpec({
 
         "add and addAll produces equivalent effects given identical input" {
             checkAll(
-                Arb.positiveInt(100), Arb.list(Arb.int())
-            ) { maxSize: Int, elements: List<Int> ->
+                Arb.list(Arb.int(), 1..100)
+            ) { elements: List<Int> ->
                 // Set up
-                val empty = FifoBoundedSet<Int>(maxSize)
+                val empty = FifoBoundedSet<Int>(elements.size)
 
                 // Test
                 val (_, actualEffectsAddAll: List<FifoBoundedSet.Effect<Int>>) = empty.addAll(elements)
@@ -121,22 +121,7 @@ class FifoBoundedSetProp : WordSpec({
                     }
 
                 // Verify
-                actualEffectsAddAll.size shouldBeLessThanOrEqual actualEffectsAdd.size
-                for ((actualEffectAddAll, actualEffectAdd) in actualEffectsAddAll
-                    .zip(actualEffectsAdd.takeLast(maxSize))
-                ) {
-                    when (actualEffectAddAll) {
-                        is FifoBoundedSet.Added ->
-                            when (actualEffectAdd) {
-                                is FifoBoundedSet.AddedEvicting ->
-                                    actualEffectAddAll.added shouldBe actualEffectAdd.added
-
-                                else -> actualEffectAddAll shouldBe actualEffectAdd
-                            }
-
-                        else -> actualEffectAddAll shouldBe actualEffectAdd
-                    }
-                }
+                actualEffectsAddAll shouldBe actualEffectsAdd
             }
         }
     }
