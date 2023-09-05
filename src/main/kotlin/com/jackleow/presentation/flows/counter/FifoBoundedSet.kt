@@ -40,27 +40,38 @@ class FifoBoundedSet<E>(
             )
 
     fun addAll(elements: List<E>): Pair<FifoBoundedSet<E>, List<Effect<E>>> = elements
-        .fold(Pair(this, listOf())) { accum: Pair<FifoBoundedSet<E>, List<Effect<E>>>, element: E ->
-            val (accumSet: FifoBoundedSet<E>, accumEffects: List<Effect<E>>) = accum
+        .fold(Pair(this, listOf())) { accum: Pair<FifoBoundedSet<E>, List<E>>, element: E ->
+            val (accumSet: FifoBoundedSet<E>, accumAdds: List<E>) = accum
             val (nextAccumSet: FifoBoundedSet<E>, nextEffect: Effect<E>?) = accumSet.add(element)
 
             Pair(
-                nextAccumSet, accumEffects + listOfNotNull(nextEffect)
+                nextAccumSet,
+                when (nextEffect) {
+                    is Added -> listOf(nextEffect.added)
+                    is AddedEvicting -> listOf(nextEffect.added)
+                    null -> listOf()
+                } + accumAdds
             )
         }
-        .let { (set: FifoBoundedSet<E>, effects: List<Effect<E>>) ->
-            Pair(
-                set,
-                effects.takeLast(maxSize).map {
-                    when (it) {
-                        is AddedEvicting ->
-                            if (uniques.contains(it.evicting)) it
-                            else Added(it.added)
+        .let { (updated: FifoBoundedSet<E>, additions: List<E>) ->
+            val effectiveEvictionSet: Set<E> = uniques - updated.uniques
+            val effectiveEvictions: List<E> = insertionOrder
+                .filter { effectiveEvictionSet.contains(it) }
 
-                        else -> it
-                    }
-                }
-            )
+            val effectiveAdditionSet: Set<E> = updated.uniques - uniques
+            val effectiveAdditions: List<E> = additions
+                .filter { effectiveAdditionSet.contains(it) }
+                .distinct()
+                .reversed()
+            val nonEvictAdds: Int = effectiveAdditions.size - effectiveEvictions.size
+            val effectiveAddeds: List<Added<E>> =
+            effectiveAdditions.take(nonEvictAdds).map { Added(it) }
+            val effectiveAddedEvictings: List<AddedEvicting<E>> =
+            effectiveAdditions.drop(nonEvictAdds).zip(effectiveEvictions).map {
+                (added: E, removed: E) -> AddedEvicting(added, removed)
+            }
+
+            Pair(updated, effectiveAddeds + effectiveAddedEvictings)
         }
 
     override fun equals(other: Any?): Boolean {

@@ -152,6 +152,41 @@ class FifoBoundedSetSpec : WordSpec({
                 actualEffects shouldBe listOf(FifoBoundedSet.AddedEvicting("test-3", "test-2"))
                 actualUpdatedInstance.insertionOrder shouldBe listOf("test-1", "test-3")
             }
+
+            "accept only the last two of four elements, evicting all existing elements" {
+                // Test
+                val (actualUpdatedInstance, actualEffects) = instance.addAll(
+                    listOf(
+                        "test-3", // skipped - overwritten
+                        "test-4", // skipped - overwritten
+                        "test-5", // test-1 evicted
+                        "test-6"  // test-2 evicted
+                    )
+                )
+
+                // Verify
+                actualEffects shouldBe listOf(
+                    FifoBoundedSet.AddedEvicting("test-5", "test-1"),
+                    FifoBoundedSet.AddedEvicting("test-6", "test-2")
+                )
+                actualUpdatedInstance.insertionOrder shouldBe listOf("test-5", "test-6")
+            }
+
+            "not accept when the last two of four elements are identical to existing elements" {
+                // Test
+                val (actualUpdatedInstance, actualEffects) = instance.addAll(
+                    listOf(
+                        "test-3", // skipped - overwritten
+                        "test-4", // skipped - overwritten
+                        "test-1", // skipped - identical to existing
+                        "test-2"  // skipped - identical to existing
+                    )
+                )
+
+                // Verify
+                actualEffects.shouldBeEmpty()
+                actualUpdatedInstance.insertionOrder shouldBe listOf("test-1", "test-2")
+            }
         }
     }
 })
