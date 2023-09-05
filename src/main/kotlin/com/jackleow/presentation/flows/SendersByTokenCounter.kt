@@ -137,11 +137,7 @@ object SendersByTokenCounter {
                                             }
                                             .toSet()
 
-                                        Triple(
-                                            tokensBySender + (sender to tokens),
-                                            addedTokens - removedTokens,
-                                            removedTokens - addedTokens
-                                        )
+                                        Triple(tokensBySender + (sender to tokens), addedTokens, removedTokens)
                                     } else {
                                         Triple(tokensBySender, prioritizedTokens.toSet(), setOf())
                                     }
