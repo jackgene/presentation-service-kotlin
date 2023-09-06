@@ -13,6 +13,14 @@ jobs:
     - name: Checkout
       uses: actions/checkout@v1
 
+    - name: Cache gradlew
+      uses: actions/cache@v3
+      with:
+        path: .gradle
+        key: gradlew-${{ hashFiles('gradle/wrapper/**') }}
+        restore-keys: |
+          gradlew-
+
     - name: Setup Java
       uses: actions/setup-java@v3
       with:
@@ -21,4 +29,4 @@ jobs:
         cache: gradle
 
     - name: Build and Test
-      run: ls .gradle && ./gradlew -Pkotest.proptest.default.iteration.count=1000 test
+      run: ./gradlew -Pkotest.proptest.default.iteration.count=1000 test
