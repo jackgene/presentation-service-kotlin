@@ -26,4 +26,4 @@ jobs:
         java-version: 11
         cache: gradle
     - name: Build and Test
-      run: ./gradlew -Pkotest.proptest.default.iteration.count=1000 test
+      run: ls .gradle && ./gradlew -Pkotest.proptest.default.iteration.count=1000 test
