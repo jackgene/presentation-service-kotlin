@@ -7,10 +7,5 @@ object KotestProjectConfig : AbstractProjectConfig() {
         displayFullTestPath = true
     }
 
-    override val parallelism = run {
-        val par = Runtime.getRuntime().availableProcessors()
-        println("Parallelism: $par")
-
-        par
-    }
+    override val parallelism = Runtime.getRuntime().availableProcessors()
 }
