@@ -36,6 +36,12 @@ dependencies {
     testImplementation("io.ktor:ktor-server-tests-jvm")
 }
 
+tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().configureEach {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+
 tasks.withType<Test>().configureEach {
     useJUnitPlatform()
     systemProperties = project.properties.filterKeys { it.startsWith("kotest") }
