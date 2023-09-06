@@ -12,17 +12,18 @@ jobs:
     steps:
     - name: Checkout
       uses: actions/checkout@v1
-
+    - name: Cache gradlew
+      uses: actions/cache@v3
+      with:
+        path: .gradle
+        key: ${{ runner.os }}-gradlew-${{ hashFiles('gradle/wrapper/**') }}
+        restore-keys: |
+          ${{ runner.os }}-gradlew-
     - name: Setup Java
       uses: actions/setup-java@v3
       with:
         distribution: zulu
         java-version: 11
-
+        cache: gradle
     - name: Build and Test
-      uses: burrunan/gradle-cache-action@v1
-      with:
-        arguments: test
-        gradle-version: wrapper
-        properties: |
-          kotest.proptest.default.iteration.count=1000      
+      run: ./gradlew -Pkotest.proptest.default.iteration.count=1000 test
