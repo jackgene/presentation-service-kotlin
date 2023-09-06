@@ -16,9 +16,9 @@ jobs:
       uses: actions/cache@v3
       with:
         path: .gradle
-        key: ${{ runner.os }}-gradlew-${{ hashFiles('gradle/wrapper/**') }}
+        key: gradlew-${{ hashFiles('gradle/wrapper/**') }}
         restore-keys: |
-          ${{ runner.os }}-gradlew-
+          gradlew-
     - name: Setup Java
       uses: actions/setup-java@v3
       with:
