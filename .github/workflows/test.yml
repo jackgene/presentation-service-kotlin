@@ -8,15 +8,21 @@ on:
       - main
 jobs:
   Test:
-    runs-on: macos-latest
+    runs-on: ubuntu-latest
     steps:
     - name: Checkout
       uses: actions/checkout@v1
+
     - name: Setup Java
       uses: actions/setup-java@v3
       with:
         distribution: zulu
         java-version: 11
-        cache: gradle
+
     - name: Build and Test
-      run: ./gradlew -Pkotest.proptest.default.iteration.count=1000 test
+      uses: burrunan/gradle-cache-action@v1
+      with:
+        arguments: test
+        gradle-version: wrapper
+        properties: |
+          kotest.proptest.default.iteration.count=1000      
