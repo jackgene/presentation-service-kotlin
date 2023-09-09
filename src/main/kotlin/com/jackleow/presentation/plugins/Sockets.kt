@@ -22,7 +22,7 @@ suspend fun Flow<Frame>.collectInto(outgoing: SendChannel<Frame>) {
     merge(this, closed)
         .takeWhile { it != null }
         .filterNotNull()
-        .collect { outgoing.send(it) }
+        .collect(outgoing::send)
 }
 
 @OptIn(FlowPreview::class)

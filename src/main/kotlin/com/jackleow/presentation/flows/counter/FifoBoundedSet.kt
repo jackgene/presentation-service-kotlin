@@ -56,11 +56,11 @@ class FifoBoundedSet<E>(
         .let { (updated: FifoBoundedSet<E>, additions: List<E>) ->
             val effectiveEvictionSet: Set<E> = uniques - updated.uniques
             val effectiveEvictions: List<E> = insertionOrder
-                .filter { effectiveEvictionSet.contains(it) }
+                .filter(effectiveEvictionSet::contains)
 
             val effectiveAdditionSet: Set<E> = updated.uniques - uniques
             val effectiveAdditions: List<E> = additions
-                .filter { effectiveAdditionSet.contains(it) }
+                .filter(effectiveAdditionSet::contains)
                 .distinct()
                 .reversed()
             val nonEvictAdds: Int = effectiveAdditions.size - effectiveEvictions.size
