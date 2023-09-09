@@ -8,7 +8,7 @@ import kotlinx.coroutines.flow.*
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
-object ModeratedTextCollector {
+object ModeratedTextCollectionFlow {
     private sealed interface Command
     private data class Next(val text: String) : Command
     private data object Broadcast : Command
@@ -16,7 +16,7 @@ object ModeratedTextCollector {
 
     private val log: Logger = LoggerFactory.getLogger(javaClass)
 
-    fun flow(
+    operator fun invoke(
         name: String,
         chatMessageSource: Flow<ChatMessage>,
         resetSource: Flow<Unit>,

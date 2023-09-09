@@ -1,8 +1,8 @@
 package com.jackleow.presentation.services
 
 import com.jackleow.presentation.flows.ChatBroadcastFlow
-import com.jackleow.presentation.flows.ModeratedTextCollector
-import com.jackleow.presentation.flows.SendersByTokenCounter
+import com.jackleow.presentation.flows.ModeratedTextCollectionFlow
+import com.jackleow.presentation.flows.SendersByTokenCountFlow
 import com.jackleow.presentation.flows.TranscriptionBroadcastFlow
 import com.jackleow.presentation.flows.tokenizing.MappedKeywordsTokenizer
 import com.jackleow.presentation.flows.tokenizing.NormalizedWordsTokenizer
@@ -21,8 +21,8 @@ class PresentationService(config: ApplicationConfig) {
     val chatMessageSink: ChatBroadcastFlow = ChatBroadcastFlow("chat")
     val resetSink: MutableSharedFlow<Unit> = MutableSharedFlow()
 
-    val languagePollSource: Flow<SendersByTokenCounter.Counts> =
-        SendersByTokenCounter.flow(
+    val languagePollSource: Flow<SendersByTokenCountFlow.Counts> =
+        SendersByTokenCountFlow(
             "language-poll",
             MappedKeywordsTokenizer(
                 languagePollConfig.config("languageByKeyword")
@@ -32,8 +32,8 @@ class PresentationService(config: ApplicationConfig) {
             languagePollConfig.property("maxVotesPerPerson").getString().toInt(),
             chatMessageSink, resetSink, rejectedMessageSink
         )
-    val wordCloudSource: Flow<SendersByTokenCounter.Counts> =
-        SendersByTokenCounter.flow(
+    val wordCloudSource: Flow<SendersByTokenCountFlow.Counts> =
+        SendersByTokenCountFlow(
             "word-cloud",
             NormalizedWordsTokenizer(
                 wordCloudConfig.property("stopWords")
@@ -46,7 +46,7 @@ class PresentationService(config: ApplicationConfig) {
             chatMessageSink, resetSink, rejectedMessageSink
         )
     val questionsSource: Flow<ModeratedText> =
-        ModeratedTextCollector.flow("question", chatMessageSink, resetSink, rejectedMessageSink)
+        ModeratedTextCollectionFlow("question", chatMessageSink, resetSink, rejectedMessageSink)
 
     val rejectedMessageSource: Flow<ChatMessage> = rejectedMessageSink
 
