@@ -65,7 +65,7 @@ class FifoBoundedSet<E>(
                 .reversed()
             val nonEvictAdds: Int = effectiveAdditions.size - effectiveEvictions.size
             val effectiveAddeds: List<Added<E>> =
-            effectiveAdditions.take(nonEvictAdds).map { Added(it) }
+                effectiveAdditions.take(nonEvictAdds).map(::Added)
             val effectiveAddedEvictings: List<AddedEvicting<E>> =
             effectiveAdditions.drop(nonEvictAdds).zip(effectiveEvictions).map {
                 (added: E, removed: E) -> AddedEvicting(added, removed)

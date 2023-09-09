@@ -89,7 +89,7 @@ object SendersByTokenCountFlow {
         rejectedMessageSink: ChatBroadcastFlow
     ): Flow<Counts> {
         val singleBroadcast: Flow<Command> = flowOf(Broadcast) // To always emit existing element
-        val senderAndTextSource: Flow<Command> = chatMessageSource.map { Next(it) }
+        val senderAndTextSource: Flow<Command> = chatMessageSource.map(::Next)
         val clearSource: Flow<Command> = resetSource.map { Clear }
         val stateFlow: MutableStateFlow<Triple<List<ChatMessageAndTokens>, TokensBySender, TokenCounts>> =
             MutableStateFlow(Triple(listOf(), mapOf(), multiSetOf()))

@@ -15,7 +15,7 @@ class NormalizedWordsTokenizer(
         require(maxWordLength >= minWordLength) {
             "maxWordLength ($maxWordLength) must be no less than minWordLength ($minWordLength)"
         }
-        val invalidStopWords: List<String> = stopWords.filterNot { (validWordPattern.matches(it)) }
+        val invalidStopWords: List<String> = stopWords.filterNot(validWordPattern::matches)
         require(invalidStopWords.isEmpty()) {
             "some stop words are invalid: ${invalidStopWords.joinToString(",", "{", "}")}"
         }
