@@ -29,8 +29,6 @@ suspend fun Flow<Frame>.collectInto(outgoing: SendChannel<Frame>) {
 fun Application.configureSockets(service: PresentationService) {
     install(WebSockets) {
         timeout = Duration.ofSeconds(900)
-        maxFrameSize = Long.MAX_VALUE
-        masking = false
     }
 
     val batchPeriod = 100.milliseconds
