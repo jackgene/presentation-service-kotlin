@@ -108,7 +108,9 @@ object SendersByTokenCountFlow {
                             val extractedTokens: List<String> = extractToken(msg.text)
 
                             if (extractedTokens.isNotEmpty()) {
-                                log.info("""Extracted tokens "${extractedTokens.joinToString("""", """")}"""")
+                                log.info(
+                                    """Extracted tokens "${extractedTokens.joinToString("""", """")}""""
+                                )
                                 val sender: String? = msg.sender.let { if (it == "") null else it }
                                 val prioritizedTokens: List<String> = extractedTokens.reversed()
                                 val (
@@ -117,7 +119,10 @@ object SendersByTokenCountFlow {
                                     removedTokens: Set<String>
                                 ) =
                                     if (sender != null) {
-                                        val (tokens: FifoBoundedSet<String>, updates: List<FifoBoundedSet.Effect<String>>) =
+                                        val (
+                                            tokens: FifoBoundedSet<String>,
+                                            updates: List<FifoBoundedSet.Effect<String>>
+                                        ) =
                                             (tokensBySender[sender] ?: FifoBoundedSet(tokensPerSender))
                                                 .addAll(prioritizedTokens)
                                         val addedTokens: Set<String> = updates.reversed()
