@@ -21,7 +21,7 @@ import org.slf4j.LoggerFactory
 private typealias TokenCounts = MultiSet<String>
 private typealias TokensBySender = Map<String, FifoBoundedSet<String>>
 
-object SendersByTokenCounter {
+object SendersByTokenCountFlow {
     private sealed interface Command
     private data class Next(val message: ChatMessage) : Command
     private data object Broadcast : Command
@@ -83,7 +83,7 @@ object SendersByTokenCounter {
 
     private val log: Logger = LoggerFactory.getLogger(javaClass)
 
-    fun flow(
+    operator fun invoke(
         name: String, extractToken: Tokenizer, tokensPerSender: Int,
         chatMessageSource: Flow<ChatMessage>, resetSource: Flow<Unit>,
         rejectedMessageSink: ChatBroadcastFlow
