@@ -49,7 +49,7 @@ object ModeratedTextCollectionFlow {
                     }
                 }
             }
-            .map { ModeratedText(it) }
+            .map(::ModeratedText)
             .shareIn(CoroutineScope(Dispatchers.Default), SharingStarted.WhileSubscribed(), 1)
             .logSubscriptions(log) { increment, count ->
                 "${if (increment) "+" else "-"}1 $name subscriber (=$count)"
