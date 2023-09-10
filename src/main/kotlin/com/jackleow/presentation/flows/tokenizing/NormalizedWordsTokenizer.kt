@@ -28,7 +28,7 @@ class NormalizedWordsTokenizer(
             .map { it.lowercase().trim('-') }
             .filter {
                 validWordPattern.matches(it)
-                        && minWordLength <= it.length && it.length <= maxWordLength
+                        && it.length in minWordLength..maxWordLength
                         && !lowerCasedStopWords.contains(it)
             }
 }
