@@ -3,6 +3,10 @@ package com.jackleow.presentation.flows
 import com.jackleow.presentation.flows.counter.*
 import com.jackleow.presentation.models.ChatMessage
 import com.jackleow.presentation.flows.tokenizing.Tokenizer
+import io.github.nomisRev.kafka.Acks
+import io.github.nomisRev.kafka.ProducerSettings
+import io.github.nomisRev.kafka.imap
+import io.github.nomisRev.kafka.produce
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.*
@@ -13,8 +17,12 @@ import kotlinx.serialization.builtins.ListSerializer
 import kotlinx.serialization.builtins.NothingSerializer
 import kotlinx.serialization.builtins.serializer
 import kotlinx.serialization.descriptors.SerialDescriptor
+import kotlinx.serialization.encodeToString
 import kotlinx.serialization.encoding.Decoder
 import kotlinx.serialization.encoding.Encoder
+import kotlinx.serialization.json.Json
+import org.apache.kafka.clients.producer.ProducerRecord
+import org.apache.kafka.common.serialization.StringSerializer
 import org.slf4j.Logger
 import org.slf4j.LoggerFactory
 
@@ -66,6 +74,11 @@ object SendersByTokenCountFlow {
     }
 
     private val log: Logger = LoggerFactory.getLogger(javaClass)
+    private val kafkaProducerSettings: ProducerSettings<String, ChatMessage> = ProducerSettings(
+        "localhost:9092",
+        StringSerializer(), StringSerializer().imap(Json::encodeToString),
+        Acks.All
+    )
 
     operator fun invoke(
         name: String, extractToken: Tokenizer, tokensPerSender: Int,
@@ -73,7 +86,14 @@ object SendersByTokenCountFlow {
         rejectedMessageSink: ChatBroadcastFlow
     ): Flow<Counts> {
         val singleBroadcast: Flow<Command> = flowOf(Broadcast) // To always emit existing element
-        val senderAndTextSource: Flow<Command> = chatMessageSource.map(::Next)
+        val senderAndTextSource: Flow<Command> = chatMessageSource
+            .onEach { chatMessage: ChatMessage ->
+                flowOf(chatMessage)
+                    .map { ProducerRecord("word-cloud.chat-message", it.sender, it) }
+                    .produce(kafkaProducerSettings)
+                    .collect()
+            }
+            .map(::Next)
         val clearSource: Flow<Command> = resetSource.map { Clear }
         val stateFlow: MutableStateFlow<Pair<TokensBySender, TokenCounts>> =
             MutableStateFlow(Pair(mapOf(), multiSetOf()))
