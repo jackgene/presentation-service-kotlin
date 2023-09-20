@@ -28,17 +28,7 @@ object SendersByTokenCountFlow {
     private data object Clear : Command
 
     @Serializable
-    data class ChatMessageAndTokens(
-        val chatMessage: ChatMessage,
-        val tokens: List<String>
-    )
-
-    @Serializable
-    data class Counts internal constructor(
-        val chatMessagesAndTokens: List<ChatMessageAndTokens>,
-        val tokensBySender: Map<String, List<String>>,
-        private val tokensAndCounts: List<List<CountOrTokens>>
-    ) {
+    data class Counts internal constructor(private val tokensAndCounts: List<List<CountOrTokens>>) {
         @Serializable(with = CountOrTokensSerializer::class)
         internal sealed interface CountOrTokens
         internal data class Count(val value: Int) : CountOrTokens
@@ -68,13 +58,7 @@ object SendersByTokenCountFlow {
             }
         }
 
-        constructor(
-            chatMessagesAndTokens: List<ChatMessageAndTokens>,
-            tokensBySender: TokensBySender,
-            tokenCounts: TokenCounts
-        ) : this(
-            chatMessagesAndTokens,
-            tokensBySender.mapValues { it.value.insertionOrder },
+        constructor(tokenCounts: TokenCounts) : this(
             tokenCounts.elementsByCount.map {
                 listOf(Count(it.key), Tokens(it.value))
             }
@@ -91,17 +75,13 @@ object SendersByTokenCountFlow {
         val singleBroadcast: Flow<Command> = flowOf(Broadcast) // To always emit existing element
         val senderAndTextSource: Flow<Command> = chatMessageSource.map(::Next)
         val clearSource: Flow<Command> = resetSource.map { Clear }
-        val stateFlow: MutableStateFlow<Triple<List<ChatMessageAndTokens>, TokensBySender, TokenCounts>> =
-            MutableStateFlow(Triple(listOf(), mapOf(), multiSetOf()))
+        val stateFlow: MutableStateFlow<Pair<TokensBySender, TokenCounts>> =
+            MutableStateFlow(Pair(mapOf(), multiSetOf()))
 
         return listOf(singleBroadcast, senderAndTextSource, clearSource)
             .merge()
             .map { command: Command ->
-                val (
-                    chatMessagesAndTokens: List<ChatMessageAndTokens>,
-                    tokensBySender: TokensBySender,
-                    tokenCounts: TokenCounts
-                ) = stateFlow.updateAndGet { (chatMessagesAndTokens, tokensBySender, tokenCounts) ->
+                val (_, tokenCounts: TokenCounts) = stateFlow.updateAndGet { (tokensBySender, tokenCounts) ->
                     when (command) {
                         is Next -> {
                             val msg: ChatMessage = command.message
@@ -155,26 +135,22 @@ object SendersByTokenCountFlow {
                                         accum + newToken
                                     }
 
-                                Triple(
-                                    chatMessagesAndTokens + ChatMessageAndTokens(msg, extractedTokens),
-                                    newTokensBySender,
-                                    newTokenCounts
-                                )
+                                Pair(newTokensBySender, newTokenCounts)
                             } else {
                                 log.info("No token extracted")
                                 rejectedMessageSink.emit(msg)
 
-                                Triple(chatMessagesAndTokens, tokensBySender, tokenCounts)
+                                Pair(tokensBySender, tokenCounts)
                             }
                         }
 
-                        is Broadcast -> Triple(chatMessagesAndTokens, tokensBySender, tokenCounts)
+                        is Broadcast -> Pair(tokensBySender, tokenCounts)
 
-                        is Clear -> Triple(listOf(), mapOf(), multiSetOf())
+                        is Clear -> Pair(mapOf(), multiSetOf())
                     }
                 }
 
-                Counts(chatMessagesAndTokens, tokensBySender, tokenCounts)
+                Counts(tokenCounts)
             }
             .shareIn(CoroutineScope(Dispatchers.Default), SharingStarted.WhileSubscribed(), 1)
             .logSubscriptions(log) { increment, count ->
