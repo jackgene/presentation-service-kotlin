@@ -55,7 +55,6 @@ fun Application.configureSockets(service: PresentationService) {
 
             webSocket("/transcription") { // websocketSession
                 service.transcriptionSource
-                    .dropWhile { it.text.isEmpty() }
                     .map { Frame.Text(Json.encodeToString(it)) }
                     .collectInto(outgoing)
             }
