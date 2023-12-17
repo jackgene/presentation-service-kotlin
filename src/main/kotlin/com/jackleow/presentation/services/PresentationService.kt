@@ -14,8 +14,8 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableSharedFlow
 
 class PresentationService(config: ApplicationConfig) {
-    private val languagePollConfig: ApplicationConfig = config.config("presentation.languagePoll")
-    private val wordCloudConfig: ApplicationConfig = config.config("presentation.wordCloud")
+    private val languagePollConfig: ApplicationConfig = config.config("presentation.language-poll")
+    private val wordCloudConfig: ApplicationConfig = config.config("presentation.word-cloud")
 
     private val rejectedMessageSink: ChatBroadcastFlow = ChatBroadcastFlow("rejected")
     val chatMessageSink: ChatBroadcastFlow = ChatBroadcastFlow("chat")
@@ -25,24 +25,24 @@ class PresentationService(config: ApplicationConfig) {
         SendersByTokenCountFlow(
             "language-poll",
             MappedKeywordsTokenizer(
-                languagePollConfig.config("languageByKeyword")
+                languagePollConfig.config("language-by-keyword")
                     .toMap()
                     .mapValues { it.value.toString() }
             ),
-            languagePollConfig.property("maxVotesPerPerson").getString().toInt(),
+            languagePollConfig.property("max-votes-per-person").getString().toInt(),
             chatMessageSink, resetSink, rejectedMessageSink
         )
     val wordCloudSource: Flow<SendersByTokenCountFlow.Counts> =
         SendersByTokenCountFlow(
             "word-cloud",
             NormalizedWordsTokenizer(
-                wordCloudConfig.property("stopWords")
+                wordCloudConfig.property("stop-words")
                     .getList()
                     .toSet(),
-                wordCloudConfig.property("minWordLength").getString().toInt(),
-                wordCloudConfig.property("maxWordLength").getString().toInt()
+                wordCloudConfig.property("min-word-length").getString().toInt(),
+                wordCloudConfig.property("max-word-length").getString().toInt()
             ),
-            wordCloudConfig.property("maxWordsPerPerson").getString().toInt(),
+            wordCloudConfig.property("max-words-per-person").getString().toInt(),
             chatMessageSink, resetSink, rejectedMessageSink
         )
     val questionsSource: Flow<ModeratedText> =
